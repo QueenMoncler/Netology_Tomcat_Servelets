@@ -1,6 +1,7 @@
 package ru.netology.servlet;
 
 import ru.netology.controller.PostController;
+import ru.netology.exception.NotFoundException;
 import ru.netology.repository.PostRepository;
 import ru.netology.service.PostService;
 
@@ -20,18 +21,21 @@ public class MainServlet extends HttpServlet {
 
   @Override
   protected void service(HttpServletRequest req, HttpServletResponse resp) {
-    // если деплоились в root context, то достаточно этого
+
+// если деплоились в root context, то достаточно этого
     try {
       final var path = req.getRequestURI();
       final var method = req.getMethod();
       // primitive routing
       if (method.equals("GET") && path.equals("/api/posts")) {
+
         controller.all(resp);
         return;
       }
       if (method.equals("GET") && path.matches("/api/posts/\\d+")) {
+
         // easy way
-        final var id = Long.parseLong(path.substring(path.lastIndexOf("/")));
+        final var id = Long.parseLong(path.substring(path.lastIndexOf("/") + 1));
         controller.getById(id, resp);
         return;
       }
@@ -45,6 +49,9 @@ public class MainServlet extends HttpServlet {
         controller.removeById(id, resp);
         return;
       }
+      resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+    } catch (NotFoundException e) {
+      e.printStackTrace();
       resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
     } catch (Exception e) {
       e.printStackTrace();
